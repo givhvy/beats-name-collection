@@ -11,6 +11,7 @@ function App() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeTab, setActiveTab] = useState<'browse' | 'random' | 'used'>('browse');
   const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -32,13 +33,20 @@ function App() {
     }
   };
 
-  const handleAddName = async (name: BeatName) => {
+  const handleAddNames = async (namesToAdd: Omit<BeatName, 'id'>[]) => {
+    setAdding(true);
     try {
-      await firebaseStorage.addName(name);
+      // Add all names in parallel
+      await Promise.all(
+        namesToAdd.map(name => firebaseStorage.addName(name))
+      );
+      // Only reload data once after all names are added
       await loadData();
     } catch (error) {
-      console.error('Error adding name:', error);
-      alert('Failed to add name. Please try again.');
+      console.error('Error adding names:', error);
+      alert('Failed to add names. Please try again.');
+    } finally {
+      setAdding(false);
     }
   };
 
@@ -152,7 +160,7 @@ function App() {
         {activeTab === 'browse' ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
-              <AddNameForm categories={categories} onAdd={handleAddName} />
+              <AddNameForm categories={categories} onAdd={handleAddNames} adding={adding} />
             </div>
             <div className="lg:col-span-2">
               <NamesList

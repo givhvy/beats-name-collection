@@ -19,7 +19,7 @@ export const firebaseStorage = {
   // Beat Names
   async getNames(): Promise<BeatName[]> {
     try {
-      const q = query(collection(db, NAMES_COLLECTION), orderBy('createdAt', 'desc'));
+      const q = query(collection(db, NAMES_COLLECTION), orderBy('addedAt', 'desc'));
       const querySnapshot = await getDocs(q);
       return querySnapshot.docs.map(doc => ({
         ...doc.data(),
