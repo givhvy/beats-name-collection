@@ -4,16 +4,20 @@ import type { BeatName, Category } from '../types';
 interface RandomPickerProps {
   names: BeatName[];
   categories: Category[];
+  onMarkAsUsed: (id: string) => void;
 }
 
-export function RandomPicker({ names, categories }: RandomPickerProps) {
+export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerProps) {
   const [selectedName, setSelectedName] = useState<BeatName | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>('all');
 
+  // Filter out used names
+  const availableNames = names.filter(n => !n.used);
+
   const filteredNames = filterCategory === 'all'
-    ? names
-    : names.filter(n => n.category === filterCategory);
+    ? availableNames
+    : availableNames.filter(n => n.category === filterCategory);
 
   const handleRandomPick = () => {
     if (filteredNames.length === 0) return;
@@ -32,8 +36,12 @@ export function RandomPicker({ names, categories }: RandomPickerProps) {
         clearInterval(interval);
         setTimeout(() => {
           const finalIndex = Math.floor(Math.random() * filteredNames.length);
-          setSelectedName(filteredNames[finalIndex]);
+          const finalName = filteredNames[finalIndex];
+          setSelectedName(finalName);
           setIsSpinning(false);
+
+          // Mark the selected name as used
+          onMarkAsUsed(finalName.id);
         }, 100);
       }
     }, 50);

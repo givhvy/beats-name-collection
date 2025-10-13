@@ -10,6 +10,11 @@ export function AddNameForm({ categories, onAdd }: AddNameFormProps) {
   const [input, setInput] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(categories[0]?.id || '');
 
+  const removeNumbers = (text: string): string => {
+    // Remove numbers and dots at the beginning (e.g., "1. Name" -> "Name")
+    return text.replace(/^\d+\.\s*/, '').trim();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -17,13 +22,17 @@ export function AddNameForm({ categories, onAdd }: AddNameFormProps) {
     const names = input.split('\n').filter(n => n.trim());
 
     names.forEach(name => {
-      const newName: BeatName = {
-        id: Date.now().toString() + Math.random(),
-        name: name.trim(),
-        category: selectedCategory,
-        addedAt: Date.now(),
-      };
-      onAdd(newName);
+      const cleanedName = removeNumbers(name.trim());
+      if (cleanedName) {
+        const newName: BeatName = {
+          id: Date.now().toString() + Math.random(),
+          name: cleanedName,
+          category: selectedCategory,
+          addedAt: Date.now(),
+          used: false,
+        };
+        onAdd(newName);
+      }
     });
 
     setInput('');

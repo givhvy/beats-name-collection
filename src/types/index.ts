@@ -3,6 +3,8 @@ export interface BeatName {
   name: string;
   category: string;
   addedAt: number;
+  used?: boolean;
+  usedAt?: number;
 }
 
 export interface Category {

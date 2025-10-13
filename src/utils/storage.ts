@@ -25,6 +25,26 @@ export const storage = {
     this.saveNames(names);
   },
 
+  markAsUsed(id: string): void {
+    const names = this.getNames();
+    const name = names.find(n => n.id === id);
+    if (name) {
+      name.used = true;
+      name.usedAt = Date.now();
+      this.saveNames(names);
+    }
+  },
+
+  restoreName(id: string): void {
+    const names = this.getNames();
+    const name = names.find(n => n.id === id);
+    if (name) {
+      name.used = false;
+      name.usedAt = undefined;
+      this.saveNames(names);
+    }
+  },
+
   // Categories
   getCategories(): Category[] {
     const data = localStorage.getItem(CATEGORIES_KEY);

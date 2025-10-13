@@ -4,11 +4,12 @@ import { storage } from './utils/storage';
 import { AddNameForm } from './components/AddNameForm';
 import { NamesList } from './components/NamesList';
 import { RandomPicker } from './components/RandomPicker';
+import { UsedNamesList } from './components/UsedNamesList';
 
 function App() {
   const [names, setNames] = useState<BeatName[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [activeTab, setActiveTab] = useState<'browse' | 'random'>('browse');
+  const [activeTab, setActiveTab] = useState<'browse' | 'random' | 'used'>('browse');
 
   useEffect(() => {
     setNames(storage.getNames());
@@ -27,6 +28,19 @@ function App() {
     }
   };
 
+  const handleMarkAsUsed = (id: string) => {
+    storage.markAsUsed(id);
+    setNames(storage.getNames());
+  };
+
+  const handleRestoreName = (id: string) => {
+    storage.restoreName(id);
+    setNames(storage.getNames());
+  };
+
+  const availableCount = names.filter(n => !n.used).length;
+  const usedCount = names.filter(n => n.used).length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -38,8 +52,16 @@ function App() {
           <p className="text-gray-600 text-lg">
             Your beautiful Renaissance-inspired beat names library
           </p>
-          <div className="mt-4 text-sm text-gray-500">
-            Total: <span className="font-semibold text-purple-600">{names.length}</span> names
+          <div className="mt-4 flex justify-center gap-6 text-sm text-gray-500">
+            <div>
+              Total: <span className="font-semibold text-purple-600">{names.length}</span> names
+            </div>
+            <div className="border-l border-gray-300 pl-6">
+              Available: <span className="font-semibold text-green-600">{availableCount}</span>
+            </div>
+            <div className="border-l border-gray-300 pl-6">
+              Used: <span className="font-semibold text-orange-600">{usedCount}</span>
+            </div>
           </div>
         </header>
 
@@ -66,6 +88,16 @@ function App() {
             >
               Random Picker
             </button>
+            <button
+              onClick={() => setActiveTab('used')}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                activeTab === 'used'
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Used Names {usedCount > 0 && <span className="ml-1 text-xs">({usedCount})</span>}
+            </button>
           </div>
         </div>
 
@@ -83,9 +115,13 @@ function App() {
               />
             </div>
           </div>
-        ) : (
+        ) : activeTab === 'random' ? (
           <div className="max-w-3xl mx-auto">
-            <RandomPicker names={names} categories={categories} />
+            <RandomPicker
+              names={names}
+              categories={categories}
+              onMarkAsUsed={handleMarkAsUsed}
+            />
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4">How to use:</h3>
               <ul className="space-y-2 text-gray-600">
@@ -101,8 +137,20 @@ function App() {
                   <span className="text-purple-500 mr-2">3.</span>
                   <span>Watch the animation and get your perfect beat name!</span>
                 </li>
+                <li className="flex items-start">
+                  <span className="text-purple-500 mr-2">4.</span>
+                  <span>The selected name will be marked as used and won't appear again</span>
+                </li>
               </ul>
             </div>
+          </div>
+        ) : (
+          <div className="max-w-7xl mx-auto">
+            <UsedNamesList
+              names={names}
+              categories={categories}
+              onRestore={handleRestoreName}
+            />
           </div>
         )}
       </div>
