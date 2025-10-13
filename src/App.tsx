@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { BeatName, Category } from './types';
-import { storage } from './utils/storage';
+import { firebaseStorage } from './utils/firebaseStorage';
 import { AddNameForm } from './components/AddNameForm';
 import { NamesList } from './components/NamesList';
 import { RandomPicker } from './components/RandomPicker';
@@ -10,36 +10,83 @@ function App() {
   const [names, setNames] = useState<BeatName[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeTab, setActiveTab] = useState<'browse' | 'random' | 'used'>('browse');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setNames(storage.getNames());
-    setCategories(storage.getCategories());
+    loadData();
   }, []);
 
-  const handleAddName = (name: BeatName) => {
-    storage.addName(name);
-    setNames(storage.getNames());
-  };
-
-  const handleDeleteName = (id: string) => {
-    if (confirm('Are you sure you want to delete this name?')) {
-      storage.deleteName(id);
-      setNames(storage.getNames());
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [namesData, categoriesData] = await Promise.all([
+        firebaseStorage.getNames(),
+        firebaseStorage.getCategories()
+      ]);
+      setNames(namesData);
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleMarkAsUsed = (id: string) => {
-    storage.markAsUsed(id);
-    setNames(storage.getNames());
+  const handleAddName = async (name: BeatName) => {
+    try {
+      await firebaseStorage.addName(name);
+      await loadData();
+    } catch (error) {
+      console.error('Error adding name:', error);
+      alert('Failed to add name. Please try again.');
+    }
   };
 
-  const handleRestoreName = (id: string) => {
-    storage.restoreName(id);
-    setNames(storage.getNames());
+  const handleDeleteName = async (id: string) => {
+    if (confirm('Are you sure you want to delete this name?')) {
+      try {
+        await firebaseStorage.deleteName(id);
+        await loadData();
+      } catch (error) {
+        console.error('Error deleting name:', error);
+        alert('Failed to delete name. Please try again.');
+      }
+    }
+  };
+
+  const handleMarkAsUsed = async (id: string) => {
+    try {
+      await firebaseStorage.markAsUsed(id);
+      await loadData();
+    } catch (error) {
+      console.error('Error marking as used:', error);
+      alert('Failed to mark name as used. Please try again.');
+    }
+  };
+
+  const handleRestoreName = async (id: string) => {
+    try {
+      await firebaseStorage.restoreName(id);
+      await loadData();
+    } catch (error) {
+      console.error('Error restoring name:', error);
+      alert('Failed to restore name. Please try again.');
+    }
   };
 
   const availableCount = names.filter(n => !n.used).length;
   const usedCount = names.filter(n => n.used).length;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Loading your beat names...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">

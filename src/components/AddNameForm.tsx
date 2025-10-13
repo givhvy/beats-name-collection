@@ -15,25 +15,24 @@ export function AddNameForm({ categories, onAdd }: AddNameFormProps) {
     return text.replace(/^\d+\.\s*/, '').trim();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Parse multiple names separated by newlines
     const names = input.split('\n').filter(n => n.trim());
 
-    names.forEach(name => {
+    for (const name of names) {
       const cleanedName = removeNumbers(name.trim());
       if (cleanedName) {
-        const newName: BeatName = {
-          id: Date.now().toString() + Math.random(),
+        const newName = {
           name: cleanedName,
           category: selectedCategory,
           addedAt: Date.now(),
           used: false,
-        };
-        onAdd(newName);
+        } as Omit<BeatName, 'id'>;
+        await onAdd(newName as BeatName);
       }
-    });
+    }
 
     setInput('');
   };
