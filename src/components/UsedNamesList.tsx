@@ -7,10 +7,6 @@ interface UsedNamesListProps {
 }
 
 export function UsedNamesList({ names, categories, onRestore }: UsedNamesListProps) {
-  const getCategoryById = (id: string) => {
-    return categories.find(c => c.id === id);
-  };
-
   const usedNames = names.filter(n => n.used);
 
   const groupedNames = categories.map(cat => ({
