@@ -34,16 +34,22 @@ function App() {
   };
 
   const handleAddNames = async (namesToAdd: Omit<BeatName, 'id'>[]) => {
+    console.log('🚀 App: handleAddNames called with', namesToAdd.length, 'names');
     setAdding(true);
     try {
       // Add all names in parallel
-      await Promise.all(
+      console.log('📤 App: Adding names to Firebase...');
+      const results = await Promise.all(
         namesToAdd.map(name => firebaseStorage.addName(name))
       );
+      console.log('✅ App: All names added to Firebase, results:', results);
+
       // Only reload data once after all names are added
+      console.log('🔄 App: Reloading data...');
       await loadData();
+      console.log('✅ App: Data reloaded successfully');
     } catch (error) {
-      console.error('Error adding names:', error);
+      console.error('❌ App: Error adding names:', error);
       alert('Failed to add names. Please try again.');
     } finally {
       setAdding(false);

@@ -1,15 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { BeatName, Category } from '../types';
 
 interface AddNameFormProps {
   categories: Category[];
-  onAdd: (names: Omit<BeatName, 'id'>[]) => void;
+  onAdd: (names: Omit<BeatName, 'id'>[]) => Promise<void>;
   adding?: boolean;
 }
 
 export function AddNameForm({ categories, onAdd, adding = false }: AddNameFormProps) {
   const [input, setInput] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(categories[0]?.id || '');
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+  // Update selected category when categories are loaded
+  useEffect(() => {
+    if (categories.length > 0 && !selectedCategory) {
+      setSelectedCategory(categories[0].id);
+      console.log('📂 Default category set:', categories[0].id);
+    }
+  }, [categories, selectedCategory]);
 
   const removeNumbers = (text: string): string => {
     // Remove numbers and dots at the beginning (e.g., "1. Name" -> "Name")
@@ -19,8 +27,21 @@ export function AddNameForm({ categories, onAdd, adding = false }: AddNameFormPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!selectedCategory) {
+      alert('Please select a category');
+      return;
+    }
+
     // Parse multiple names separated by newlines
     const nameLines = input.split('\n').filter(n => n.trim());
+
+    if (nameLines.length === 0) {
+      alert('Please enter at least one name');
+      return;
+    }
+
+    console.log('📝 Submitting names:', nameLines.length, 'names');
+    console.log('📂 Selected category:', selectedCategory);
 
     // Prepare all names at once
     const namesToAdd: Omit<BeatName, 'id'>[] = nameLines
@@ -32,16 +53,24 @@ export function AddNameForm({ categories, onAdd, adding = false }: AddNameFormPr
             category: selectedCategory,
             addedAt: Date.now(),
             used: false,
-          };
+          } as Omit<BeatName, 'id'>;
         }
         return null;
       })
       .filter((name): name is Omit<BeatName, 'id'> => name !== null);
 
+    console.log('✅ Prepared names to add:', namesToAdd);
+
     // Add all names at once
     if (namesToAdd.length > 0) {
-      await onAdd(namesToAdd);
-      setInput('');
+      try {
+        await onAdd(namesToAdd);
+        setInput('');
+        console.log('✅ Names added successfully!');
+      } catch (error) {
+        console.error('❌ Error in handleSubmit:', error);
+        alert('Failed to add names. Check console for details.');
+      }
     }
   };
 

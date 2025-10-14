@@ -7,12 +7,21 @@ interface NamesListProps {
 }
 
 export function NamesList({ names, categories, onDelete }: NamesListProps) {
+  // Filter only available (not used) names
+  const availableNames = names.filter(n => !n.used);
+
+  // Group names by category
   const groupedNames = categories.map(cat => ({
     category: cat,
-    names: names.filter(n => n.category === cat.id)
+    names: availableNames.filter(n => n.category === cat.id)
   })).filter(group => group.names.length > 0);
 
-  if (names.length === 0) {
+  // Find names without a valid category
+  const uncategorizedNames = availableNames.filter(
+    n => !categories.some(cat => cat.id === n.category)
+  );
+
+  if (availableNames.length === 0) {
     return (
       <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
         <div className="text-gray-400 text-lg">

@@ -19,23 +19,35 @@ export const firebaseStorage = {
   // Beat Names
   async getNames(): Promise<BeatName[]> {
     try {
+      console.log('🔥 Firebase: Fetching names from Firestore...');
       const q = query(collection(db, NAMES_COLLECTION), orderBy('addedAt', 'desc'));
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
+      const names = querySnapshot.docs.map(doc => ({
         ...doc.data(),
         id: doc.id
       } as BeatName));
+      console.log('✅ Firebase: Fetched', names.length, 'names from Firestore');
+      return names;
     } catch (error) {
-      console.error('Error getting names:', error);
+      console.error('❌ Firebase: Error getting names:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+      }
       return [];
     }
   },
 
   async addName(name: Omit<BeatName, 'id'>): Promise<void> {
     try {
-      await addDoc(collection(db, NAMES_COLLECTION), name);
+      console.log('🔥 Firebase: Adding name to Firestore:', name);
+      const docRef = await addDoc(collection(db, NAMES_COLLECTION), name);
+      console.log('✅ Firebase: Name added with ID:', docRef.id);
     } catch (error) {
-      console.error('Error adding name:', error);
+      console.error('❌ Firebase: Error adding name:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
       throw error;
     }
   },
