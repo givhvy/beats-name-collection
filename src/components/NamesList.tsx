@@ -16,11 +16,6 @@ export function NamesList({ names, categories, onDelete }: NamesListProps) {
     names: availableNames.filter(n => n.category === cat.id)
   })).filter(group => group.names.length > 0);
 
-  // Find names without a valid category
-  const uncategorizedNames = availableNames.filter(
-    n => !categories.some(cat => cat.id === n.category)
-  );
-
   if (availableNames.length === 0) {
     return (
       <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
