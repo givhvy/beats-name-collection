@@ -19,7 +19,9 @@ export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerPr
     ? availableNames
     : availableNames.filter(n => n.category === filterCategory);
 
-  const handleRandomPick = () => {
+  const handleRandomPick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); // Prevent any default behavior
+
     if (filteredNames.length === 0) return;
 
     setIsSpinning(true);
@@ -101,6 +103,7 @@ export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerPr
       </div>
 
       <button
+        type="button"
         onClick={handleRandomPick}
         disabled={filteredNames.length === 0 || isSpinning}
         className={`w-full bg-white text-purple-600 font-bold py-4 px-6 rounded-xl transition-all transform ${
