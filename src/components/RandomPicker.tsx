@@ -9,6 +9,7 @@ interface RandomPickerProps {
 
 export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerProps) {
   const [selectedName, setSelectedName] = useState<BeatName | null>(null);
+  const [displayName, setDisplayName] = useState<BeatName | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>('all');
 
@@ -26,12 +27,15 @@ export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerPr
 
     setIsSpinning(true);
     setSelectedName(null);
+    setDisplayName(null);
 
     // Animate through random names
     let count = 0;
     const interval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * filteredNames.length);
-      setSelectedName(filteredNames[randomIndex]);
+      const tempName = filteredNames[randomIndex];
+      setSelectedName(tempName);
+      setDisplayName(tempName);
       count++;
 
       if (count >= 20) {
@@ -40,9 +44,10 @@ export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerPr
           const finalIndex = Math.floor(Math.random() * filteredNames.length);
           const finalName = filteredNames[finalIndex];
           setSelectedName(finalName);
+          setDisplayName(finalName);
           setIsSpinning(false);
 
-          // Mark the selected name as used
+          // Mark the selected name as used immediately
           onMarkAsUsed(finalName.id);
         }, 100);
       }
@@ -76,20 +81,20 @@ export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerPr
       </div>
 
       <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-8 mb-6 min-h-[180px] flex items-center justify-center">
-        {selectedName ? (
+        {displayName ? (
           <div className="text-center">
             <div
               className={`text-4xl md:text-5xl font-bold mb-3 ${isSpinning ? 'animate-pulse' : 'animate-bounce'}`}
             >
-              {selectedName.name}
+              {displayName.name}
             </div>
             <div className="flex items-center justify-center">
               <div
                 className="w-3 h-3 rounded-full mr-2"
-                style={{ backgroundColor: getCategoryById(selectedName.category)?.color }}
+                style={{ backgroundColor: getCategoryById(displayName.category)?.color }}
               />
               <span className="text-lg opacity-90">
-                {getCategoryById(selectedName.category)?.name}
+                {getCategoryById(displayName.category)?.name}
               </span>
             </div>
           </div>
