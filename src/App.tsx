@@ -70,21 +70,39 @@ function App() {
 
   const handleMarkAsUsed = async (id: string) => {
     try {
+      // Optimistically update the UI first
+      setNames(prevNames =>
+        prevNames.map(name =>
+          name.id === id ? { ...name, used: true } : name
+        )
+      );
+
+      // Then update in Firebase in the background
       await firebaseStorage.markAsUsed(id);
-      await loadData();
     } catch (error) {
       console.error('Error marking as used:', error);
       alert('Failed to mark name as used. Please try again.');
+      // Reload data to ensure consistency if there was an error
+      await loadData();
     }
   };
 
   const handleRestoreName = async (id: string) => {
     try {
+      // Optimistically update the UI first
+      setNames(prevNames =>
+        prevNames.map(name =>
+          name.id === id ? { ...name, used: false } : name
+        )
+      );
+
+      // Then update in Firebase in the background
       await firebaseStorage.restoreName(id);
-      await loadData();
     } catch (error) {
       console.error('Error restoring name:', error);
       alert('Failed to restore name. Please try again.');
+      // Reload data to ensure consistency if there was an error
+      await loadData();
     }
   };
 
