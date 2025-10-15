@@ -8,7 +8,6 @@ interface RandomPickerProps {
 }
 
 export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerProps) {
-  const [selectedName, setSelectedName] = useState<BeatName | null>(null);
   const [displayName, setDisplayName] = useState<BeatName | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -26,7 +25,6 @@ export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerPr
     if (filteredNames.length === 0) return;
 
     setIsSpinning(true);
-    setSelectedName(null);
     setDisplayName(null);
 
     // Animate through random names
@@ -34,7 +32,6 @@ export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerPr
     const interval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * filteredNames.length);
       const tempName = filteredNames[randomIndex];
-      setSelectedName(tempName);
       setDisplayName(tempName);
       count++;
 
@@ -43,7 +40,6 @@ export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerPr
         setTimeout(() => {
           const finalIndex = Math.floor(Math.random() * filteredNames.length);
           const finalName = filteredNames[finalIndex];
-          setSelectedName(finalName);
           setDisplayName(finalName);
           setIsSpinning(false);
 
