@@ -11,6 +11,7 @@ export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerPr
   const [displayName, setDisplayName] = useState<BeatName | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [showCopied, setShowCopied] = useState(false);
 
   // Filter out used names
   const availableNames = names.filter(n => !n.used);
@@ -42,6 +43,14 @@ export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerPr
           const finalName = filteredNames[finalIndex];
           setDisplayName(finalName);
           setIsSpinning(false);
+
+          // Copy name to clipboard
+          navigator.clipboard.writeText(finalName.name).then(() => {
+            setShowCopied(true);
+            setTimeout(() => setShowCopied(false), 2000);
+          }).catch(err => {
+            console.error('Failed to copy to clipboard:', err);
+          });
 
           // Mark the selected name as used immediately
           onMarkAsUsed(finalName.id);
@@ -84,7 +93,7 @@ export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerPr
             >
               {displayName.name}
             </div>
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center mb-2">
               <div
                 className="w-3 h-3 rounded-full mr-2"
                 style={{ backgroundColor: getCategoryById(displayName.category)?.color }}
@@ -93,6 +102,11 @@ export function RandomPicker({ names, categories, onMarkAsUsed }: RandomPickerPr
                 {getCategoryById(displayName.category)?.name}
               </span>
             </div>
+            {showCopied && (
+              <div className="text-sm bg-white bg-opacity-30 rounded-lg px-3 py-1 inline-block animate-bounce">
+                ✓ Copied to clipboard!
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center text-xl opacity-75">
